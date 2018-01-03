@@ -1,0 +1,219 @@
+#!/bin/sh
+
+VERSION=0.0.1
+VIM=~/.vim
+
+create_profile()
+{
+  local profile=$1
+
+  if [ -e "$VIM/profiles/$profile" ]; then
+    echo "Profile '$profile' already exists."
+    return 1
+  fi
+
+  mkdir -p $VIM/profiles/$profile/start
+  mkdir -p $VIM/profiles/$profile/opt
+}
+
+remove_profile()
+{
+  local profile=$1
+
+  if [ ! -e "$VIM/profiles/$profile" ]; then
+    echo "Profile '$profile' is missing."
+    return 1
+  fi
+
+  rm -rf $VIM/profiles/$profile
+}
+
+use_profile()
+{
+  local profile=$1
+
+  if [ ! -e "$VIM/profiles/$profile" ]; then
+    echo "Profile '$profile' is missing."
+    return 1
+  fi
+
+  if [ -e "$VIM/pack/profile" ]; then
+    rm -f $VIM/pack/profile
+  fi
+
+  if [ ! -e "$VIM/pack" ]; then
+    mkdir -p $VIM/pack
+  fi
+
+  ln -s ../profiles/$profile $VIM/pack/profile
+}
+
+install_plugin()
+{
+  local repo=$1
+  local pack=$(basename $1)
+
+  if [ -e "$VIM/plugins/$pack" ]; then
+    echo "'$repo' plugin already exists."
+    return 1
+  fi
+
+  if [ ! -e "$VIM/plugins" ]; then
+    mkdir -p $VIM/plugins
+  fi
+
+  git clone https://github.com/$repo.git $VIM/plugins/$pack
+}
+
+uninstall_plugin()
+{
+  local pack=$(basename $1)
+
+  if [ -e "$VIM/plugins/$pack" ]; then
+    find $VIM/profiles -name $pack | xargs rm -f
+    rm -rf plugins/$pack
+  fi
+}
+
+enable_plugin()
+{
+  local repo=$1
+  local pack=$(basename $1)
+  local profile=$2
+  local load_type=$3
+
+  if [ ! -e "$VIM/plugins/$pack" ]; then
+    echo "There is no '$repo' plugin."
+    return 1;
+  fi
+
+  if [ "$profile" = "" ]; then
+    profile_path=$VIM/pack/profile
+  else
+    profile_path=$VIM/profiles/$profile
+  fi
+
+  if [ ! -e "$profile_path/$load_type/$pack" ]; then
+    ln -s ../../../plugins/$pack $profile_path/$load_type/$pack
+  fi
+}
+
+disable_plugin()
+{
+  local repo=$1
+  local pack=$(basename $1)
+  local profile=$2
+  local load_type=$3
+
+  if [ "$profile" = "" ]; then
+    profile_path=$VIM/pack/profile
+  else
+    profile_path=$VIM/profiles/$profile
+  fi
+
+  if [ -e "$profile_path/$load_type/$pack" ]; then
+    rm $profile_path/$load_type/$pack
+  fi
+}
+
+usage()
+{
+  cat <<EOF
+Usage:
+
+  grayfox <command> <arguments...> [options...]
+
+Description:
+
+  vim plugin manager.
+
+Command:
+
+  grayfox create <profile>
+
+  grayfox remove <profile>
+
+  grayfox use <profile>
+
+  grayfox install <plugin>
+
+  grayfox uninstall <plugin>
+
+  grayfox enable <plugin> [-p|--profile] [--load-type]
+
+  grayfox disable <plugin> [-p|--profile] [--load-type]
+
+Options:
+
+  --version                 this version
+
+  -h, --hellp               print this help text
+
+  -p, --profile             profile name
+
+  --load-type [start|opt]   The default load type is start.
+EOF
+}
+
+version()
+{
+  echo "grayfox version $VERSION"
+}
+
+while true
+do
+  case "$1" in
+    create|remove|use| \
+    install|uninstall| \
+    enable|disable)
+                         COMMAND=$1; P1=$2; shift 2;;
+    -p|--profile)        profile=$2; shift 2;;
+    --load-type)         load_type=$2; shift 2;;
+    -h|--help)           usage && exit 0;;
+    --version)           version && exit 0;;
+    *)                   break ;;
+  esac
+done
+
+if [ "$COMMAND" = "" -o "$P1" = "" ]; then
+  usage && exit 1
+fi
+
+if [ ! "$profile" = "" -a ! -e "$VIM/profiles/$profile" ]; then
+  echo "Profile '$profile' is missing."
+  exit 1
+fi
+
+if [ "$load_type" = "opt" ]; then
+  load_type=opt
+else
+  load_type=start
+fi
+
+case "$COMMAND" in
+  create)
+    create_profile "$P1"
+    ;;
+  remove)
+    remove_profile "$P1"
+    ;;
+  use)
+    use_profile "$P1"
+    ;;
+  install)
+    install_plugin "$P1"
+    ;;
+  uninstall)
+    uninstall_plugin "$P1"
+    ;;
+  enable)
+    enable_plugin "$P1" "$profile" "$load_type"
+    ;;
+  disable)
+    disable_plugin "$P1" "$profile" "$load_type"
+    ;;
+  *)
+    usage && exit 1
+    ;;
+esac
+
