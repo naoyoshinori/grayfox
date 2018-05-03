@@ -1,7 +1,8 @@
 #!/bin/sh
 
-VERSION=0.0.1
-VIM=~/.vim
+VERSION=0.0.2
+VIM=$HOME/.vim
+VIMRC=$HOME/.vimrc
 
 create_profile()
 {
@@ -14,6 +15,7 @@ create_profile()
 
   mkdir -p $VIM/profiles/$profile/start
   mkdir -p $VIM/profiles/$profile/opt
+  mkdir -p $VIM/profiles/$profile/vimrc.d
 }
 
 remove_profile()
@@ -116,6 +118,19 @@ disable_plugin()
   fi
 }
 
+update_vimrc()
+{
+  echo -n > $VIMRC
+
+  for file in `ls $VIM/vimrc.d/*.vim 2>/dev/null`; do
+    echo "source $file" >> $VIMRC
+  done
+
+  for file in `ls $VIM/pack/profile/vimrc.d/*.vim 2>/dev/null`; do
+    echo "source $file" >> $VIMRC
+  done
+}
+
 usage()
 {
   cat <<EOF
@@ -143,6 +158,8 @@ Command:
 
   grayfox disable <plugin> [-p|--profile] [--load-type]
 
+  grayfox reload
+
 Options:
 
   --version                 this version
@@ -167,6 +184,8 @@ do
     install|uninstall| \
     enable|disable)
                          COMMAND=$1; P1=$2; shift 2;;
+    reload)
+                         COMMAND=$1; P1="ok"; shift 1;;
     -p|--profile)        profile=$2; shift 2;;
     --load-type)         load_type=$2; shift 2;;
     -h|--help)           usage && exit 0;;
@@ -211,6 +230,9 @@ case "$COMMAND" in
     ;;
   disable)
     disable_plugin "$P1" "$profile" "$load_type"
+    ;;
+  reload)
+    update_vimrc
     ;;
   *)
     usage && exit 1
