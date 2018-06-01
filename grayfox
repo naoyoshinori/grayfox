@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=0.0.3
+VERSION=0.0.4
 VIM=$HOME/.vim
 VIMRC=$HOME/.vimrc
 
@@ -118,6 +118,17 @@ disable_plugin()
   fi
 }
 
+list_plugins()
+{
+  if [ ! -e "$VIM/plugins" ]; then
+    mkdir -p $VIM/plugins
+  fi
+
+  for pack in `ls $VIM/plugins 2>/dev/null`; do
+    echo "$pack"
+  done
+}
+
 update_plugins()
 {
   if [ ! -e "$VIM/plugins" ]; then
@@ -170,6 +181,8 @@ Command:
 
   grayfox disable <plugin> [-p|--profile] [--load-type]
 
+  grayfox plugin list
+
   grayfox update
 
   grayfox reload
@@ -197,11 +210,13 @@ do
     create|remove|use| \
     install|uninstall| \
     enable|disable)
-                         COMMAND=$1; P1=$2; shift 2;;
+                         COMMAND=$1; P1=$2; shift $(( $# >= 2 ? 2 : 1 ));;
     update|reload)
                          COMMAND=$1; P1="ok"; shift 1;;
-    -p|--profile)        profile=$2; shift 2;;
-    --load-type)         load_type=$2; shift 2;;
+    plugin)
+                         COMMAND=$1; SUBCOMMAND=$2; P1="ok"; shift $(( $# >= 2 ? 2 : 1 ));;
+    -p|--profile)        profile=$2; shift shift $(( $# >= 2 ? 2 : 1 ));;
+    --load-type)         load_type=$2; shift $(( $# >= 2 ? 2 : 1 ));;
     -h|--help)           usage && exit 0;;
     --version)           version && exit 0;;
     *)                   break ;;
@@ -244,6 +259,16 @@ case "$COMMAND" in
     ;;
   disable)
     disable_plugin "$P1" "$profile" "$load_type"
+    ;;
+  plugin)
+    case "$SUBCOMMAND" in
+      list)
+        list_plugins
+        ;;
+      *)
+        usage && exit 1
+        ;;
+    esac
     ;;
   update)
     update_plugins

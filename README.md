@@ -33,6 +33,13 @@ grayfox enable <plugin> [-p|--profile] [--load-type]
 grayfox disable <plugin> [-p|--profile] [--load-type]
 ```
 
+List of plugins.
+
+```
+grayfox plugin list
+```
+
+
 Update all plugins.
 
 ```
