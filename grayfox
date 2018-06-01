@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=0.0.4
+VERSION=0.0.5
 VIM=$HOME/.vim
 VIMRC=$HOME/.vimrc
 
@@ -48,6 +48,17 @@ use_profile()
   fi
 
   ln -s ../profiles/$profile $VIM/pack/profile
+}
+
+list_profiles()
+{
+  if [ ! -e "$VIM/profiles" ]; then
+    mkdir -p $VIM/profiles
+  fi
+
+  for profile in `ls $VIM/profiles 2>/dev/null`; do
+    echo "$profile"
+  done
 }
 
 install_plugin()
@@ -211,10 +222,10 @@ do
     install|uninstall| \
     enable|disable)
                          COMMAND=$1; P1=$2; shift $(( $# >= 2 ? 2 : 1 ));;
+    profile|plugin)
+                         COMMAND=$1; SUBCOMMAND=$2; P1="ok"; shift $(( $# >= 2 ? 2 : 1 ));;
     update|reload)
                          COMMAND=$1; P1="ok"; shift 1;;
-    plugin)
-                         COMMAND=$1; SUBCOMMAND=$2; P1="ok"; shift $(( $# >= 2 ? 2 : 1 ));;
     -p|--profile)        profile=$2; shift shift $(( $# >= 2 ? 2 : 1 ));;
     --load-type)         load_type=$2; shift $(( $# >= 2 ? 2 : 1 ));;
     -h|--help)           usage && exit 0;;
@@ -247,6 +258,16 @@ case "$COMMAND" in
     ;;
   use)
     use_profile "$P1"
+    ;;
+  profile)
+    case "$SUBCOMMAND" in
+      list)
+        list_profiles
+        ;;
+      *)
+        usage && exit 1
+        ;;
+    esac
     ;;
   install)
     install_plugin "$P1"
