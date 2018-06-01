@@ -99,14 +99,14 @@ grayfox disable 'altercation/vim-colors-solarized'
 ## Install
 
 ```
-git clone https://github.com/yoshi-naoyuki/grayfox.git
+git clone https://github.com/naoyoshinori/grayfox.git
 cd ./grayfox
 cp grayfox /usr/local/bin/grayfox
 ```
 
 ## Licence
 
-[MIT](https://github.com/yoshi-naoyuki/grayfox/blob/master/LICENSE)
+[MIT](https://github.com/naoyoshinori/grayfox/blob/master/LICENSE)
 
 ## Author
 
