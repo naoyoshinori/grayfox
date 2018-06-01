@@ -226,7 +226,7 @@ do
                          COMMAND=$1; SUBCOMMAND=$2; P1="ok"; shift $(( $# >= 2 ? 2 : 1 ));;
     update|reload)
                          COMMAND=$1; P1="ok"; shift 1;;
-    -p|--profile)        profile=$2; shift shift $(( $# >= 2 ? 2 : 1 ));;
+    -p|--profile)        profile=$2; shift $(( $# >= 2 ? 2 : 1 ));;
     --load-type)         load_type=$2; shift $(( $# >= 2 ? 2 : 1 ));;
     -h|--help)           usage && exit 0;;
     --version)           version && exit 0;;
