@@ -33,6 +33,12 @@ grayfox enable <plugin> [-p|--profile] [--load-type]
 grayfox disable <plugin> [-p|--profile] [--load-type]
 ```
 
+Update all plugins.
+
+```
+grayfox update
+```
+
 This `reload` command creates or updates the `$HOME/.vimrc`, a `.vimrc` reads the files `$HOME/.vim/vimrc.d/*.vim` and `$HOME/.vim/pack/profile/vimrc.d/*.vim`.
 
 ```

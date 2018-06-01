@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=0.0.2
+VERSION=0.0.3
 VIM=$HOME/.vim
 VIMRC=$HOME/.vimrc
 
@@ -118,6 +118,18 @@ disable_plugin()
   fi
 }
 
+update_plugins()
+{
+  if [ ! -e "$VIM/plugins" ]; then
+    mkdir -p $VIM/plugins
+  fi
+
+  for pack in `ls $VIM/plugins 2>/dev/null`; do
+    echo "$pack"
+    git -C $VIM/plugins/$pack pull --no-stat
+  done
+}
+
 update_vimrc()
 {
   echo -n > $VIMRC
@@ -158,6 +170,8 @@ Command:
 
   grayfox disable <plugin> [-p|--profile] [--load-type]
 
+  grayfox update
+
   grayfox reload
 
 Options:
@@ -184,7 +198,7 @@ do
     install|uninstall| \
     enable|disable)
                          COMMAND=$1; P1=$2; shift 2;;
-    reload)
+    update|reload)
                          COMMAND=$1; P1="ok"; shift 1;;
     -p|--profile)        profile=$2; shift 2;;
     --load-type)         load_type=$2; shift 2;;
@@ -230,6 +244,9 @@ case "$COMMAND" in
     ;;
   disable)
     disable_plugin "$P1" "$profile" "$load_type"
+    ;;
+  update)
+    update_plugins
     ;;
   reload)
     update_vimrc
